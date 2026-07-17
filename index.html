@@ -39,12 +39,12 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg-a:      #12162a;
-      --bg-b:      #1b2140;
-      --panel:     #1e2440;
-      --panel-2:   #262d4d;
-      --line:      #333c60;
-      --line-strong:#aab4e0;
+      --bg-a:      #090b16;
+      --bg-b:      #10142a;
+      --panel:     #242c52;
+      --panel-2:   #2c3560;
+      --line:      #3d4874;
+      --line-strong:#c3cdf7;
       --given:     #eef1fb;
       --user:      #8fb3ff;
       --sel:       #33447a;
@@ -161,7 +161,7 @@
     grid-template-columns: repeat(9, 1fr);
     aspect-ratio: 1 / 1;
     background: var(--line-strong);
-    border: 3px solid var(--line-strong);
+    border: 4px solid var(--line-strong);
     border-radius: 10px;
     overflow: hidden;
     gap: 1px;
@@ -181,8 +181,8 @@
     transition: background .12s;
   }
   /* thick dividers every 3 cols/rows via margins on the 1px gap */
-  .cell.br { margin-right: 2px; }
-  .cell.bb { margin-bottom: 2px; }
+  .cell.br { margin-right: 3px; }
+  .cell.bb { margin-bottom: 3px; }
 
   .cell.given { color: var(--given); font-weight: 700; }
   .cell.user  { color: var(--user);  font-weight: 600; }
