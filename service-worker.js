@@ -3,7 +3,7 @@
    und danach immer aus dem Cache bedient. Bei neuer Version einfach CACHE
    hochzählen; alte Caches werden im activate-Event entfernt. */
 
-const CACHE = 'sudoku-v1';
+const CACHE = 'sudoku-v2';
 const ASSETS = [
   './',
   './index.html',

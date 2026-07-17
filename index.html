@@ -7,7 +7,7 @@
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#33549e">
+<meta name="theme-color" content="#4a63d6">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 
 <!-- iOS Vollbild / Homescreen -->
@@ -17,27 +17,54 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
   :root {
-    --bg:        #e9edf3;
+    --bg-a:      #eef1fb;
+    --bg-b:      #dbe4f7;
     --panel:     #ffffff;
-    --line:      #c3cdd9;
-    --line-strong:#2a3340;
-    --given:     #1b2430;
-    --user:      #2f6fb0;
-    --sel:       #cfe0f4;
-    --peer:      #eef3f9;
-    --same:      #bcd6f0;
-    --error-bg:  #fbe2e2;
-    --error:     #c23b3b;
-    --accent:    #33549e;
+    --panel-2:   #f4f7fd;
+    --line:      #d7dee8;
+    --line-strong:#2a3350;
+    --given:     #1b2233;
+    --user:      #3763c9;
+    --sel:       #d7e6fb;
+    --peer:      #eef2fb;
+    --same:      #c6dcf7;
+    --error-bg:  #fce7e7;
+    --error:     #d0453f;
+    --accent:    #4a63d6;
+    --accent-2:  #7b6de0;
     --accent-ink:#ffffff;
-    --muted:     #6b7684;
+    --muted:     #727d92;
+    --shadow:    0 1px 2px rgba(30,40,70,.06), 0 8px 24px rgba(30,40,70,.10);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-a:      #12162a;
+      --bg-b:      #1b2140;
+      --panel:     #1e2440;
+      --panel-2:   #262d4d;
+      --line:      #333c60;
+      --line-strong:#aab4e0;
+      --given:     #eef1fb;
+      --user:      #8fb3ff;
+      --sel:       #33447a;
+      --peer:      #232a4c;
+      --same:      #3a4d8c;
+      --error-bg:  #4a2430;
+      --error:     #ff8a8a;
+      --accent:    #6b7ef2;
+      --accent-2:  #9d7ef2;
+      --accent-ink:#ffffff;
+      --muted:     #9aa3c4;
+      --shadow:    0 1px 2px rgba(0,0,0,.3), 0 12px 30px rgba(0,0,0,.4);
+    }
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   html, body {
     margin: 0;
-    background: var(--bg);
+    background: radial-gradient(circle at 50% 0%, var(--bg-b), var(--bg-a) 65%);
     color: var(--given);
     font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
     overscroll-behavior: none;              /* kein Pull-to-Refresh / Bounce */
@@ -59,54 +86,73 @@
   .app {
     width: 100%;
     max-width: 480px;
+    background: var(--panel);
+    border-radius: 22px;
+    padding: 20px 18px 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(140,150,190,.12);
   }
 
   header {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   h1 {
     margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
   }
-  h1 .kanji { color: var(--accent); font-weight: 700; margin-right: 8px; }
+  h1 .kanji {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+    margin-right: 8px;
+  }
 
   .stats {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     font-variant-numeric: tabular-nums;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
   }
-  .stats b { color: var(--given); font-weight: 600; }
+  .stats span {
+    background: var(--panel-2);
+    padding: 5px 10px;
+    border-radius: 10px;
+  }
+  .stats b { color: var(--given); font-weight: 700; }
 
   .toolbar {
     display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   select, button {
     font: inherit;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid var(--line);
-    background: var(--panel);
+    background: var(--panel-2);
     color: var(--given);
-    padding: 9px 12px;
+    padding: 10px 12px;
     cursor: pointer;
-    transition: background .12s, border-color .12s, transform .05s;
+    transition: background .15s, border-color .15s, transform .05s, box-shadow .15s;
   }
-  button:active { transform: scale(0.97); }
+  button:active { transform: scale(0.96); }
   .toolbar select { flex: 1; }
   .btn-primary {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: var(--accent-ink);
-    border-color: var(--accent);
-    font-weight: 600;
+    border-color: transparent;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(74, 99, 214, .35);
   }
+  .btn-primary:hover { filter: brightness(1.06); }
 
   /* ---- Grid ---- */
   .board {
@@ -116,11 +162,12 @@
     aspect-ratio: 1 / 1;
     background: var(--line-strong);
     border: 3px solid var(--line-strong);
-    border-radius: 6px;
+    border-radius: 10px;
     overflow: hidden;
     gap: 1px;
     user-select: none;
     touch-action: manipulation;
+    box-shadow: var(--shadow);
   }
   .cell {
     background: var(--panel);
@@ -131,13 +178,14 @@
     cursor: pointer;
     font-size: clamp(20px, 6vw, 30px);
     line-height: 1;
+    transition: background .12s;
   }
   /* thick dividers every 3 cols/rows via margins on the 1px gap */
   .cell.br { margin-right: 2px; }
   .cell.bb { margin-bottom: 2px; }
 
-  .cell.given { color: var(--given); font-weight: 600; }
-  .cell.user  { color: var(--user);  font-weight: 500; }
+  .cell.given { color: var(--given); font-weight: 700; }
+  .cell.user  { color: var(--user);  font-weight: 600; }
 
   .cell.peer  { background: var(--peer); }
   .cell.same  { background: var(--same); }
@@ -165,22 +213,24 @@
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     gap: 6px;
-    margin-top: 14px;
+    margin-top: 16px;
   }
   .num {
     padding: 0;
     height: 52px;
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 21px;
+    font-weight: 700;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     line-height: 1;
     color: var(--accent);
+    background: var(--panel-2);
   }
+  .num:hover:not(:disabled) { border-color: var(--accent); }
   .num small { font-size: 10px; color: var(--muted); font-weight: 400; margin-top: 2px; }
-  .num:disabled { opacity: .35; cursor: default; }
+  .num:disabled { opacity: .3; cursor: default; }
 
   .actions {
     display: grid;
@@ -190,16 +240,18 @@
   }
   .actions button { height: 48px; font-size: 14px; }
   .actions button.on {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: var(--accent-ink);
-    border-color: var(--accent);
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(74, 99, 214, .35);
   }
 
   /* ---- Win overlay ---- */
   .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20, 28, 40, .55);
+    background: rgba(15, 20, 35, .6);
+    backdrop-filter: blur(3px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -209,18 +261,31 @@
   .overlay.show { display: flex; }
   .card {
     background: var(--panel);
-    border-radius: 14px;
-    padding: 28px 26px;
+    border-radius: 18px;
+    padding: 30px 26px;
     text-align: center;
     max-width: 320px;
-    box-shadow: 0 20px 50px rgba(0,0,0,.3);
-    animation: pop .2s ease;
+    box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    animation: pop .25s ease;
+    border: 1px solid rgba(140,150,190,.15);
   }
-  .card h2 { margin: 0 0 6px; font-size: 24px; }
-  .card p  { margin: 0 0 18px; color: var(--muted); }
-  .card .big { font-size: 34px; margin-bottom: 6px; }
+  .card h2 {
+    margin: 0 0 6px;
+    font-size: 25px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .card p  { margin: 0 0 20px; color: var(--muted); }
+  .card .big {
+    font-size: 40px;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 6px 14px rgba(74, 99, 214, .35));
+  }
 
-  .hint { font-size: 13px; color: var(--muted); margin-top: 14px; text-align: center; line-height: 1.5; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.5; }
 </style>
 </head>
 <body>
