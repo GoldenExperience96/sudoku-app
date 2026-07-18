@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeTheme } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -15,7 +15,10 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'www', 'index.html'));
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  nativeTheme.themeSource = 'dark'; // App startet immer im Dark Mode, unabhaengig vom Windows-Theme
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
