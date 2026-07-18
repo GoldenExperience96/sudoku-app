@@ -9,7 +9,7 @@
     "prestart": "npm run sync",
     "start": "electron .",
     "prepackage:win": "npm run sync",
-    "package:win": "electron-packager . SudokuApp --platform=win32 --arch=x64 --out=dist --overwrite --app-copyright=\"Sudoku\""
+    "package:win": "electron-packager . SudokuApp --platform=win32 --arch=x64 --out=dist --overwrite --icon=../icons/icon.ico --app-copyright=\"Sudoku\""
   },
   "devDependencies": {
     "electron": "^31.0.0",

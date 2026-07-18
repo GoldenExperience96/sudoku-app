@@ -22,6 +22,8 @@ installierbare PWA (Handy/Tablet) und als eigenständige Windows-App.
 - Offline-fähig via Service-Worker (Cache-first), installierbar als PWA
 - Auf dem Handy öffnet ein Zellen-Tap zusätzlich die native Zifferntastatur
   des Geräts
+- Spielstand wird automatisch gespeichert (`localStorage`) und beim erneuten
+  Öffnen fortgesetzt — Neuladen/Neustart unterbricht das laufende Spiel nicht
 
 ---
 
@@ -32,7 +34,7 @@ sudoku-app/
 ├─ index.html              # das Spiel: Markup, Styles und komplette Spiellogik
 ├─ manifest.webmanifest    # PWA-Metadaten (Name, Icons, Vollbild, Farben)
 ├─ service-worker.js       # Offline-Caching (Cache-first, siehe unten)
-├─ icons/                  # App-Icons (192/512, maskable, apple-touch, favicon)
+├─ icons/                  # App-Icons (192/512, maskable, apple-touch, favicon, .ico für die EXE)
 ├─ make_icons.py           # Skript zur Icon-Generierung aus einer Quellgrafik
 ├─ desktop/                # Windows-Desktop-App (Electron), siehe unten
 │  ├─ main.js              # Electron-Hauptprozess, lädt www/index.html im Fenster
@@ -150,14 +152,17 @@ Installer** — der komplette Ordner muss zusammenbleiben, wenn er kopiert
 oder weitergegeben wird (z. B. als ZIP). Einfach `SudokuApp.exe` per
 Doppelklick starten, keine Installation nötig.
 
-`desktop/dist/` und `desktop/node_modules/` sind über `.gitignore` bewusst
-vom Repository ausgeschlossen (zu groß fürs Git-Repo).
+`desktop/dist/`, `desktop/node_modules/` und `desktop/www/` sind über
+`.gitignore` bewusst vom Repository ausgeschlossen (zu groß bzw. generiert).
 
-### Eigenes App-Icon / echter Installer (optional, noch nicht umgesetzt)
-- Icon: `.ico`-Datei erzeugen (z. B. mit `png-to-ico`) und in
-  `electron-packager` per `--icon=pfad.ico` einbinden
-- Installer mit Startmenü-Eintrag statt portablem Ordner: `electron-builder`
-  mit NSIS-Target verwenden
+Die EXE trägt ein eigenes App-Icon (`icons/icon.ico`, erzeugt aus den
+vorhandenen PNGs mit `png-to-ico`) und startet immer im Dark Mode
+(`nativeTheme.themeSource = 'dark'` in `main.js`), unabhängig vom
+Windows-Theme.
+
+### Echter Installer statt portablem Ordner (optional, noch nicht umgesetzt)
+Für ein klassisches Setup mit Startmenü-Eintrag statt des portablen Ordners:
+`electron-builder` mit NSIS-Target verwenden.
 
 ---
 
@@ -206,10 +211,3 @@ npm install -D @capacitor/assets
 npx capacitor-assets generate --android
 ```
 
----
-
-## Bekannte Lücke
-
-Der Spielstand wird aktuell **nicht** gespeichert. Ein Neuladen der Seite
-oder ein Neustart der App beginnt ein neues Spiel. Ließe sich mit
-`localStorage` nachrüsten, damit ein laufendes Spiel App-Neustarts übersteht.

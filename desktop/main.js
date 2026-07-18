@@ -6,6 +6,7 @@ function createWindow() {
     width: 520,
     height: 900,
     title: 'Sudoku',
+    icon: path.join(__dirname, 'www', 'icons', 'icon-512.png'),
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,

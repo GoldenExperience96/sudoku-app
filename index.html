@@ -585,6 +585,7 @@ function select(i) {
   // oeffnet auf dem Handy die native Zifferntastatur (kein Effekt bei Tastatur/Maus)
   kbdInput.value = '';
   kbdInput.focus({ preventScroll: true });
+  saveGame();
 }
 
 // Ziffer eingeben – im Notizmodus als Bleistift-Notiz, sonst als Wert.
@@ -614,6 +615,7 @@ function enter(n) {
   }
   render();
   checkWin();
+  saveGame();
 }
 
 // Entfernt Notiz n aus allen Feldern in Zeile/Spalte/Block von i.
@@ -634,6 +636,7 @@ function erase() {
   state.current[i] = 0;
   state.notes[i].clear();
   render();
+  saveGame();
 }
 
 // Tipp: setzt im aktuell gewählten (oder ersten leeren) Feld die korrekte Ziffer.
@@ -651,6 +654,7 @@ function hint() {
   boardEl.children[i].classList.add('pulse');
   render();
   checkWin();
+  saveGame();
 }
 
 // --- Undo ---
@@ -667,6 +671,7 @@ function undo() {
   state.current = prev.current;
   state.notes = prev.notes;
   render();
+  saveGame();
 }
 
 function toggleNotes() {
@@ -689,11 +694,60 @@ function checkWin() {
 const elapsed = () => Math.floor((Date.now() - state.startTime) / 1000);
 const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 
-function startTimer() {
+function startTimer(resumeElapsed = 0) {
   clearInterval(state.timerId);
-  state.startTime = Date.now();
+  state.startTime = Date.now() - resumeElapsed * 1000;
   const t = document.getElementById('timer');
+  t.textContent = fmt(elapsed());
   state.timerId = setInterval(() => { t.textContent = fmt(elapsed()); }, 500);
+}
+
+/* ---- Spielstand speichern & fortsetzen ---- */
+
+const SAVE_KEY = 'sudoku-save-v1';
+
+function saveGame() {
+  if (state.solved) { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} return; }
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      puzzle: state.puzzle,
+      solution: state.solution,
+      current: state.current,
+      notes: state.notes.map(s => [...s]),
+      mistakes: state.mistakes,
+      difficulty: document.getElementById('difficulty').value,
+      elapsed: elapsed(),
+    }));
+  } catch (e) { /* Speicher voll/nicht verfuegbar - Spiel laeuft trotzdem weiter */ }
+}
+
+// Laedt einen gespeicherten Spielstand. Gibt true zurueck, wenn erfolgreich.
+function loadGame() {
+  let data;
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    data = JSON.parse(raw);
+  } catch (e) { return false; }
+  if (!data || !Array.isArray(data.puzzle) || data.puzzle.length !== 81) return false;
+
+  state.puzzle = data.puzzle;
+  state.solution = data.solution;
+  state.current = data.current;
+  state.notes = data.notes.map(arr => new Set(arr));
+  state.selected = null;
+  state.notesMode = false;
+  state.mistakes = data.mistakes || 0;
+  state.undoStack = [];
+  state.solved = false;
+
+  document.getElementById('difficulty').value = data.difficulty || '48';
+  document.getElementById('notes').classList.remove('on');
+  document.getElementById('mistakes').textContent = state.mistakes;
+  document.getElementById('overlay').classList.remove('show');
+  startTimer(data.elapsed || 0);
+  render();
+  return true;
 }
 
 /* ---- Neues Spiel ---- */
@@ -713,8 +767,9 @@ function newGame() {
   document.getElementById('notes').classList.remove('on');
   document.getElementById('mistakes').textContent = '0';
   document.getElementById('overlay').classList.remove('show');
-  render();
   startTimer();
+  render();
+  saveGame();
 }
 
 /* ---- Tastatur ---- */
@@ -757,7 +812,7 @@ document.getElementById('undo').addEventListener('click', undo);
 // Start
 buildBoard();
 buildPad();
-newGame();
+if (!loadGame()) newGame();
 
 // --- PWA: Service-Worker registrieren (nur über http/https, nicht über file://) ---
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
