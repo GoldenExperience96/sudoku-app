@@ -35,8 +35,10 @@ sudoku-app/
 ├─ icons/                  # App-Icons (192/512, maskable, apple-touch, favicon)
 ├─ make_icons.py           # Skript zur Icon-Generierung aus einer Quellgrafik
 ├─ desktop/                # Windows-Desktop-App (Electron), siehe unten
-│  ├─ main.js              # Electron-Hauptprozess, lädt ../index.html im Fenster
+│  ├─ main.js              # Electron-Hauptprozess, lädt www/index.html im Fenster
+│  ├─ sync-assets.js       # kopiert index.html & Co. nach desktop/www (siehe unten)
 │  ├─ package.json         # Abhängigkeiten + Build-Skripte
+│  ├─ www/                 # synchronisierte Kopie der Web-App, nicht in Git
 │  └─ dist/                # Build-Ausgabe (SudokuApp.exe), nicht in Git
 └─ README.md
 ```
@@ -121,7 +123,11 @@ Danach: eigenes App-Icon, Vollbild ohne Browserleiste, offline nutzbar.
 
 Im Ordner [`desktop/`](desktop/) liegt eine dünne Electron-Hülle, die
 `index.html` unverändert in einem eigenen Fenster lädt (keine Code-Dopplung,
-kein Server nötig).
+kein Server nötig). Da `electron-packager` beim Bauen nur den Inhalt von
+`desktop/` mitnimmt (nicht die Elternebene), kopiert `sync-assets.js` die
+Web-App-Dateien vor jedem Start/Build automatisch nach `desktop/www/` — das
+passiert automatisch über die `prestart`/`prepackage:win`-Skripte, manuell
+per `npm run sync`.
 
 ### Voraussetzungen
 - Node.js (LTS)

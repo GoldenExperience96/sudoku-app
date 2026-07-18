@@ -5,7 +5,10 @@
   "description": "Sudoku als Windows-Desktop-App",
   "main": "main.js",
   "scripts": {
+    "sync": "node sync-assets.js",
+    "prestart": "npm run sync",
     "start": "electron .",
+    "prepackage:win": "npm run sync",
     "package:win": "electron-packager . SudokuApp --platform=win32 --arch=x64 --out=dist --overwrite --app-copyright=\"Sudoku\""
   },
   "devDependencies": {
