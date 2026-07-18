@@ -286,6 +286,18 @@
   }
 
   .hint { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.5; }
+
+  /* unsichtbares Feld, das auf dem Handy die native Zifferntastatur oeffnet */
+  #kbdInput {
+    position: fixed;
+    top: 0; left: 0;
+    width: 1px; height: 1px;
+    opacity: 0;
+    border: none;
+    padding: 0;
+    font-size: 16px; /* verhindert Auto-Zoom auf iOS beim Fokussieren */
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -309,6 +321,9 @@
   </div>
 
   <div class="board" id="board"></div>
+
+  <input type="tel" id="kbdInput" inputmode="numeric" pattern="[0-9]*"
+         autocomplete="off" tabindex="-1" aria-hidden="true">
 
   <div class="pad" id="pad"></div>
 
@@ -567,6 +582,9 @@ function hasConflict(i) {
 function select(i) {
   state.selected = i;
   render();
+  // oeffnet auf dem Handy die native Zifferntastatur (kein Effekt bei Tastatur/Maus)
+  kbdInput.value = '';
+  kbdInput.focus({ preventScroll: true });
 }
 
 // Ziffer eingeben – im Notizmodus als Bleistift-Notiz, sonst als Wert.
@@ -701,8 +719,13 @@ function newGame() {
 
 /* ---- Tastatur ---- */
 
+const kbdInput = document.getElementById('kbdInput');
+
 document.addEventListener('keydown', (e) => {
-  if (e.key >= '1' && e.key <= '9') { enter(+e.key); return; }
+  // Ziffern von der Handy-Tastatur kommen ueber das 'input'-Event von kbdInput
+  // (zuverlaessiger als keydown auf mobilen virtuellen Tastaturen).
+  const viaKbdInput = document.activeElement === kbdInput;
+  if (e.key >= '1' && e.key <= '9') { if (!viaKbdInput) enter(+e.key); return; }
   if (e.key === 'Backspace' || e.key === 'Delete') { erase(); return; }
   if (e.key === 'n' || e.key === 'N') { toggleNotes(); return; }
   if (state.selected == null) return;
@@ -714,6 +737,13 @@ document.addEventListener('keydown', (e) => {
   else return;
   e.preventDefault();
   select(idx(r, c));
+});
+
+// Handy-Zifferntastatur: erste eingegebene Ziffer uebernehmen, Feld sofort leeren.
+kbdInput.addEventListener('input', () => {
+  const m = kbdInput.value.match(/[1-9]/);
+  kbdInput.value = '';
+  if (m) enter(+m[0]);
 });
 
 // Buttons verdrahten
