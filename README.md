@@ -1,52 +1,168 @@
-# Sudoku – App-Paket
+# Sudoku
 
-Reine Web-App (HTML/JS), als PWA installierbar und mit Capacitor zu einer
-Android-APK verpackbar. Keine Abhängigkeiten zur Laufzeit.
+Web-basiertes Sudoku mit Generator, Notizen, Tipp-Funktion und Offline-Modus.
+Reines HTML/CSS/JavaScript ohne Laufzeit-Abhängigkeiten — läuft als Website,
+installierbare PWA (Handy/Tablet) und als eigenständige Windows-App.
+
+**Live-Version:** https://goldenexperience96.github.io/sudoku-app/
+**Repository:** https://github.com/GoldenExperience96/sudoku-app
+
+---
+
+## Features
+
+- Sudoku-Generator mit eindeutiger Lösung (Backtracking-Solver), vier
+  Schwierigkeitsgrade (Leicht/Mittel/Schwer/Experte)
+- Bleistift-Notizen pro Zelle, Tipp-Funktion, unbegrenztes Zurück (Undo)
+- Zeit- und Fehler-Zähler, Gewinn-Dialog
+- Fehler-Erkennung (falsche Ziffern werden rot markiert)
+- Helles/dunkles Design, folgt automatisch der Systemeinstellung des Geräts
+  (`prefers-color-scheme`)
+- Vollständig per Tastatur bedienbar (Pfeiltasten, Ziffern 1–9, Entf, N)
+- Offline-fähig via Service-Worker (Cache-first), installierbar als PWA
+- Auf dem Handy öffnet ein Zellen-Tap zusätzlich die native Zifferntastatur
+  des Geräts
+
+---
+
+## Projektstruktur
 
 ```
 sudoku-app/
-├─ index.html              # das Spiel (App-Einstieg)
-├─ manifest.webmanifest    # App-Metadaten (Name, Icons, Vollbild)
-├─ service-worker.js       # Offline-Caching
-└─ icons/                  # App-Icons (192/512, maskable, apple-touch)
+├─ index.html              # das Spiel: Markup, Styles und komplette Spiellogik
+├─ manifest.webmanifest    # PWA-Metadaten (Name, Icons, Vollbild, Farben)
+├─ service-worker.js       # Offline-Caching (Cache-first, siehe unten)
+├─ icons/                  # App-Icons (192/512, maskable, apple-touch, favicon)
+├─ make_icons.py           # Skript zur Icon-Generierung aus einer Quellgrafik
+├─ desktop/                # Windows-Desktop-App (Electron), siehe unten
+│  ├─ main.js              # Electron-Hauptprozess, lädt ../index.html im Fenster
+│  ├─ package.json         # Abhängigkeiten + Build-Skripte
+│  └─ dist/                # Build-Ausgabe (SudokuApp.exe), nicht in Git
+└─ README.md
 ```
 
 ---
 
-## Weg A – Als PWA aufs Gerät (schnellster Weg, kein Play Store)
+## Steuerung
 
-Eine PWA muss über **HTTPS** ausgeliefert werden, damit „Installieren" angeboten
-wird (Ausnahme: `localhost` zum Testen). Ein bloßer Doppelklick auf `index.html`
-(file://) reicht **nicht** – der Service-Worker startet dann nicht.
+| Eingabe                          | Wirkung                                  |
+|-----------------------------------|-------------------------------------------|
+| Klick/Tap auf Zelle               | Zelle auswählen (öffnet auf dem Handy zusätzlich die native Zifferntastatur) |
+| Ziffer 1–9 (Klick, Tastatur, Handy-Tastatur) | Zahl setzen bzw. im Notizmodus Notiz ein-/austragen |
+| Pfeiltasten                       | Auswahl bewegen                          |
+| Entf / Rücktaste                  | Zelle leeren                             |
+| N                                 | Notizmodus umschalten                    |
+| „✏️ Notizen“ / „⌫ Löschen“ / „💡 Tipp“ / „↶ Zurück“ | entsprechende Aktion als Button |
 
-### 1. Lokal testen
+---
+
+## Lokale Entwicklung
+
+Kein Build-Schritt nötig. Da der Service-Worker nur über `http(s)://`
+funktioniert (nicht über `file://`), lokal über einen simplen Webserver
+öffnen, z. B. mit Node:
+
 ```bash
-cd sudoku-app
-python3 -m http.server 8000
+npx serve -l 8000
 ```
-Am Rechner: http://localhost:8000 → alles läuft, Service-Worker aktiv.
 
-### 2. Öffentlich hosten (HTTPS, kostenlos)
-Ordnerinhalt bei einem der folgenden Dienste als statische Seite ablegen:
-- **GitHub Pages** (Repo → Settings → Pages)
-- **Netlify** / **Cloudflare Pages** (Ordner reinziehen)
+oder mit Python:
 
-### 3. Auf Tablet/Handy installieren
-- **Android (Chrome):** Seite öffnen → Menü ⋮ → „App installieren" /
-  „Zum Startbildschirm hinzufügen". Danach eigenes Icon, Vollbild, offline.
-- **iOS (Safari):** Teilen-Symbol → „Zum Home-Bildschirm".
+```bash
+python -m http.server 8000
+```
+
+Dann `http://localhost:8000` im Browser öffnen.
+
+### Änderungen veröffentlichen
+
+Der Service-Worker cached alle Assets beim ersten Besuch und beim ihm bereits
+bekannte Wiederbesuch **immer aus dem Cache**. Nach jeder inhaltlichen
+Änderung an `index.html`, `manifest.webmanifest` oder den Icons deshalb die
+Cache-Version in `service-worker.js` hochzählen:
+
+```js
+const CACHE = 'sudoku-v5';   // hochzählen, sonst sehen Nutzer die Änderung nicht
+```
+
+Danach committen und pushen — GitHub Pages baut die Live-Version automatisch
+neu:
+
+```bash
+git add -A
+git commit -m "..."
+git push
+```
 
 ---
 
-## Weg B – Echte Android-APK mit Capacitor
+## Als PWA installieren (Handy/Tablet)
 
-Ergebnis: installierbare `.apk` (Sideload) bzw. `.aab` (Play Store).
-Die Web-Assets werden **in die App eingebettet** – kein Server nötig, sofort offline.
+Die Live-Version läuft bereits über HTTPS auf GitHub Pages, also direkt
+installierbar:
+
+- **Android (Chrome):** https://goldenexperience96.github.io/sudoku-app/
+  öffnen → Menü ⋮ → „App installieren“ / „Zum Startbildschirm hinzufügen“
+- **iOS (Safari):** Seite öffnen → Teilen-Symbol → „Zum Home-Bildschirm“
+
+Danach: eigenes App-Icon, Vollbild ohne Browserleiste, offline nutzbar.
+
+### Wie das Hosting eingerichtet wurde (zur Referenz)
+
+1. Git + GitHub-CLI (`gh`) installiert, `gh auth login`
+2. `git init`, `git add -A`, `git commit`
+3. `gh repo create sudoku-app --public --source=. --remote=origin --push`
+4. GitHub Pages aktiviert über
+   `gh api repos/GoldenExperience96/sudoku-app/pages -X POST -f "source[branch]=main" -f "source[path]=/"`
+
+---
+
+## Windows-Desktop-App (Electron)
+
+Im Ordner [`desktop/`](desktop/) liegt eine dünne Electron-Hülle, die
+`index.html` unverändert in einem eigenen Fenster lädt (keine Code-Dopplung,
+kein Server nötig).
 
 ### Voraussetzungen
 - Node.js (LTS)
-- JDK 17
-- Android Studio (inkl. Android SDK)
+
+### Im Entwicklungsmodus starten
+```bash
+cd desktop
+npm install
+npm start
+```
+
+### Portable EXE bauen
+```bash
+cd desktop
+npm run package:win
+```
+Ergebnis: `desktop/dist/SudokuApp-win32-x64/SudokuApp.exe` (~260 MB, weil
+Chromium/Node mitgeliefert werden). Es ist eine **portable App, kein
+Installer** — der komplette Ordner muss zusammenbleiben, wenn er kopiert
+oder weitergegeben wird (z. B. als ZIP). Einfach `SudokuApp.exe` per
+Doppelklick starten, keine Installation nötig.
+
+`desktop/dist/` und `desktop/node_modules/` sind über `.gitignore` bewusst
+vom Repository ausgeschlossen (zu groß fürs Git-Repo).
+
+### Eigenes App-Icon / echter Installer (optional, noch nicht umgesetzt)
+- Icon: `.ico`-Datei erzeugen (z. B. mit `png-to-ico`) und in
+  `electron-packager` per `--icon=pfad.ico` einbinden
+- Installer mit Startmenü-Eintrag statt portablem Ordner: `electron-builder`
+  mit NSIS-Target verwenden
+
+---
+
+## Optional: Echte Android-APK mit Capacitor (noch nicht umgesetzt)
+
+Alternative zur PWA, falls später eine `.apk`/`.aab` fürs Sideloading oder
+den Play Store gebraucht wird. Die Web-Assets werden dabei in die App
+eingebettet — kein Server nötig, sofort offline.
+
+### Voraussetzungen
+- Node.js (LTS), JDK 17, Android Studio (inkl. Android SDK)
 
 ### Schritte
 ```bash
@@ -77,8 +193,7 @@ Zum Signieren/Veröffentlichen erzeugst du in Android Studio einen Keystore
 (Build > Generate Signed Bundle / APK). Für den Play Store lädst du die
 signierte `.aab` in der Play Console hoch.
 
-### App-Icons in der nativen App
-Capacitor nutzt eigene Android-Ressourcen. Am einfachsten mit dem Asset-Tool:
+Für App-Icons in der nativen App eignet sich `@capacitor/assets`:
 ```bash
 npm install -D @capacitor/assets
 # eine Quelldatei icon.png (min. 1024x1024) in resources/ ablegen
@@ -87,6 +202,8 @@ npx capacitor-assets generate --android
 
 ---
 
-## Hinweis zum Offline-Speicher
-Der aktuelle Spielstand wird noch nicht gespeichert. Wenn du magst, lässt sich
-`localStorage` ergänzen, damit ein laufendes Spiel App-Neustarts übersteht.
+## Bekannte Lücke
+
+Der Spielstand wird aktuell **nicht** gespeichert. Ein Neuladen der Seite
+oder ein Neustart der App beginnt ein neues Spiel. Ließe sich mit
+`localStorage` nachrüsten, damit ein laufendes Spiel App-Neustarts übersteht.
